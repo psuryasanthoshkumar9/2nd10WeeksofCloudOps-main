@@ -8,10 +8,12 @@ dotenv.config();
 
 const app = express();
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(morgan("common"));
 
+// MySQL connection
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USERNAME,
@@ -29,6 +31,7 @@ db.connect((err) => {
   }
 });
 
+// Health check
 app.get("/", (req, res) => {
   res.json("Backend is running");
 });
@@ -38,8 +41,8 @@ app.get("/books", (req, res) => {
   const q = "SELECT * FROM books";
   db.query(q, (err, data) => {
     if (err) {
-      console.error(err);
-      return res.status(500).json(err);
+      console.error("FETCH ERROR:", err);
+      return res.status(500).json({ message: "Error fetching books" });
     }
     return res.json(data);
   });
@@ -47,6 +50,8 @@ app.get("/books", (req, res) => {
 
 // ADD new book
 app.post("/books", (req, res) => {
+  console.log("REQUEST BODY:", req.body);
+
   const q = `
     INSERT INTO books
     (book_title, book_desc, book_price, book_cover)
@@ -73,7 +78,10 @@ app.post("/books", (req, res) => {
 app.delete("/books/:id", (req, res) => {
   const q = "DELETE FROM books WHERE id = ?";
   db.query(q, [req.params.id], (err) => {
-    if (err) return res.status(500).json(err);
+    if (err) {
+      console.error("DELETE ERROR:", err);
+      return res.status(500).json({ message: "Delete failed" });
+    }
     return res.json({ message: "Book deleted" });
   });
 });
@@ -98,11 +106,15 @@ app.put("/books/:id", (req, res) => {
   ];
 
   db.query(q, values, (err) => {
-    if (err) return res.status(500).json(err);
+    if (err) {
+      console.error("UPDATE ERROR:", err);
+      return res.status(500).json({ message: "Update failed" });
+    }
     return res.json({ message: "Book updated" });
   });
 });
 
+// Start server
 app.listen(80, () => {
   console.log("Backend running on port 80");
 });
