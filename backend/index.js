@@ -8,12 +8,16 @@ dotenv.config();
 
 const app = express();
 
+// =====================
 // Middlewares
+// =====================
 app.use(cors());
 app.use(express.json());
 app.use(morgan("common"));
 
+// =====================
 // MySQL connection
+// =====================
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USERNAME,
@@ -22,7 +26,9 @@ const db = mysql.createConnection({
   port: 3306
 });
 
+// =====================
 // Test DB connection
+// =====================
 db.connect((err) => {
   if (err) {
     console.error("DB CONNECTION ERROR:", err);
@@ -31,12 +37,16 @@ db.connect((err) => {
   }
 });
 
+// =====================
 // Health check
+// =====================
 app.get("/", (req, res) => {
   res.json("Backend is running");
 });
 
-// GET all books
+// =====================
+// GET all books (FIXED)
+// =====================
 app.get("/books", (req, res) => {
   const q = "SELECT * FROM books";
   db.query(q, (err, data) => {
@@ -44,11 +54,23 @@ app.get("/books", (req, res) => {
       console.error("FETCH ERROR:", err);
       return res.status(500).json({ message: "Error fetching books" });
     }
-    return res.json(data);
+
+    // 🔁 Map DB columns → frontend fields
+    const mappedBooks = data.map(b => ({
+      id: b.id,
+      title: b.book_title,
+      description: b.book_desc,
+      price: b.book_price,
+      cover: b.book_cover
+    }));
+
+    return res.json(mappedBooks);
   });
 });
 
+// =====================
 // ADD new book
+// =====================
 app.post("/books", (req, res) => {
   console.log("REQUEST BODY:", req.body);
 
@@ -74,7 +96,9 @@ app.post("/books", (req, res) => {
   });
 });
 
+// =====================
 // DELETE book
+// =====================
 app.delete("/books/:id", (req, res) => {
   const q = "DELETE FROM books WHERE id = ?";
   db.query(q, [req.params.id], (err) => {
@@ -86,7 +110,9 @@ app.delete("/books/:id", (req, res) => {
   });
 });
 
+// =====================
 // UPDATE book
+// =====================
 app.put("/books/:id", (req, res) => {
   const q = `
     UPDATE books SET
@@ -114,7 +140,9 @@ app.put("/books/:id", (req, res) => {
   });
 });
 
+// =====================
 // Start server
+// =====================
 app.listen(80, () => {
   console.log("Backend running on port 80");
 });
