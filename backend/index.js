@@ -1,5 +1,5 @@
 import express from "express";
-import mysql from "mysql";
+import mysql from "mysql2";
 import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
@@ -21,7 +21,7 @@ const db = mysql.createConnection({
 });
 
 // Test DB connection
-db.connect(err => {
+db.connect((err) => {
   if (err) {
     console.error("DB CONNECTION ERROR:", err);
   } else {
@@ -45,7 +45,7 @@ app.get("/books", (req, res) => {
   });
 });
 
-// ADD new book ✅ FIXED
+// ADD new book
 app.post("/books", (req, res) => {
   const q = `
     INSERT INTO books
@@ -60,7 +60,7 @@ app.post("/books", (req, res) => {
     req.body.cover
   ];
 
-  db.query(q, values, (err, data) => {
+  db.query(q, values, (err) => {
     if (err) {
       console.error("INSERT ERROR:", err);
       return res.status(500).json({ message: "Something went wrong" });
@@ -72,7 +72,7 @@ app.post("/books", (req, res) => {
 // DELETE book
 app.delete("/books/:id", (req, res) => {
   const q = "DELETE FROM books WHERE id = ?";
-  db.query(q, [req.params.id], (err, data) => {
+  db.query(q, [req.params.id], (err) => {
     if (err) return res.status(500).json(err);
     return res.json({ message: "Book deleted" });
   });
@@ -97,7 +97,7 @@ app.put("/books/:id", (req, res) => {
     req.params.id
   ];
 
-  db.query(q, values, (err, data) => {
+  db.query(q, values, (err) => {
     if (err) return res.status(500).json(err);
     return res.json({ message: "Book updated" });
   });
