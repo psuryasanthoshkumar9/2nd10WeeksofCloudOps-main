@@ -6,7 +6,7 @@ import API_BASE_URL from "./config";
 const Add = () => {
   const [book, setBook] = useState({
     title: "",
-    description: "",   // ✅ FIXED
+    description: "",   // ✅ FIX
     price: "",
     cover: "",
   });
@@ -46,7 +46,7 @@ const Add = () => {
       <textarea
         rows={5}
         placeholder="Book description"
-        name="description"   // ✅ FIXED
+        name="description"   // ✅ FIX
         onChange={handleChange}
       />
 
